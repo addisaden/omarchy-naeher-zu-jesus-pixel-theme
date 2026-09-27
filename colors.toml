@@ -1,0 +1,37 @@
+# Näher zu Jesus — PIXEL / 8-Bit-Edition
+# Bernstein-CRT auf Nachthimmel, Phosphor-Grün, Sonnenaufgangs-Rahmen.
+mode = "dark"
+
+accent = "#FFD166"
+selection = "#5C2A4D"
+muted = "#4A5A80"
+
+background = "#0A1020"
+dark_background = "#070B17"
+darker_background = "#04070F"
+lighter_background = "#1A2A4A"
+
+foreground = "#F7DFA8"
+dark_foreground = "#7A89A8"
+light_foreground = "#FFF1C9"
+bright_foreground = "#FFFFFF"
+
+red = "#FF5A4E"
+yellow = "#FFD166"
+orange = "#FF7A1A"
+green = "#7CE38B"
+cyan = "#5CE1E6"
+blue = "#90CAF9"
+magenta = "#E07ACF"
+brown = "#8A4B2C"
+
+bright_red = "#FF8A80"
+bright_yellow = "#FFE7A0"
+bright_green = "#A8F5B2"
+bright_cyan = "#9AF0F3"
+bright_blue = "#BBDEFB"
+bright_magenta = "#F0A8E4"
+
+# Fensterrahmen als Sonnenaufgangs-Verlauf
+hyprland_active_border = "#FFD166 #E85D04 #5C2A4D 45deg"
+hyprland_inactive_border = "#1A2A4A"
