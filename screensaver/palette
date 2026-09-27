@@ -1,0 +1,19 @@
+# Farben für den Bildschirmschoner – nur Hex-Werte, keine Befehle.
+# Jede final*-Zeile ist ein Verlauf für das fertige Bild; pro Durchlauf wird
+# einer davon mit zufälliger Richtung gewählt.
+final_sonnenaufgang = FFF1C9 FFD166 F4A261 FF7A1A E85D04
+final_morgenhimmel  = 90CAF9 E07ACF FF7A1A FFD166 FFF1C9
+final_glut          = FFD166 FF7A1A E85D04 C2456B
+final_kreuz         = FFFFFF FFF1C9 FFD166 F4A261
+
+# Laser, Strahlen, Blitze
+light   = FFFFFF FFF1C9 FFD166
+# Funken, Feuer, Abkühlen
+fire    = FFFFFF FFD166 FF7A1A E85D04 A23B2A 5C2A4D
+ember   = FFD166 FF7A1A E85D04
+# Dämmerung: Gitter, Rauch, Wellen
+dusk    = 1A2A4A 5C2A4D A23B2A E85D04
+# Sterne und Himmel
+sky     = FFFFFF 90CAF9 BBDEFB
+# Phosphor-Terminal (Matrix)
+phosphor = 7CE38B 1F5A2E

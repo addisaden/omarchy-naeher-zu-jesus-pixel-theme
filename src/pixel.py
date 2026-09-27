@@ -373,67 +373,206 @@ def unlock():
 
 
 # === 5) Bildschirmschoner (ttfx-Text) ======================================
-def screensaver():
-    """Einfarbiges Pixelbild für den Omarchy-Bildschirmschoner. Zwei Pixel
-    übereinander ergeben eine Terminalzelle (▀ ▄ █), so bleiben sie quadratisch."""
-    W, H = 91, 60
-    on = [[False] * W for _ in range(H)]
+# Omarchy lässt Textdateien mit ttfx-Effekten erscheinen. Je zwei Pixel
+# übereinander ergeben eine Terminalzelle (▀ ▄ █), so bleiben sie quadratisch;
+# Beschriftungen stehen als normaler Text in eigenen Zellen.
+class Blocks:
+    def __init__(self, cols, rows):
+        self.w, self.h = cols, rows * 2
+        self.on = [[False] * self.w for _ in range(self.h)]
+        self.txt = {}
 
-    def put(x, y):
-        if 0 <= x < W and 0 <= y < H:
-            on[y][x] = True
+    def put(self, x, y):
+        if 0 <= x < self.w and 0 <= y < self.h:
+            self.on[y][x] = True
 
-    cx, horizon = W // 2, 30
-    # Kreuz
-    for y in range(2, 25):
-        for x in range(cx - 2, cx + 3):
-            put(x, y)
-    for y in range(8, 13):
-        for x in range(cx - 10, cx + 11):
-            put(x, y)
-    # Sonne, die am Horizont hinter dem Kreuz aufgeht (gestreift wie im 8-Bit-Spiel)
+    def rect(self, x, y, w, h):
+        for yy in range(y, y + h):
+            for xx in range(x, x + w):
+                self.put(xx, yy)
+
+    def sprite(self, rows, x, y, scale=1):
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                if ch == "#":
+                    self.rect(x + i * scale, y + j * scale, scale, scale)
+
+    def text(self, s, x, y, scale=1):
+        """5×7-Pixelschrift; y ist die Oberkante der Akzentzeile."""
+        for ch in s:
+            if ch in UMLAUT:
+                self.sprite([".#.#."], x, y, scale)
+            self.sprite(GLYPH.get(ch, GLYPH["?"]), x, y + 2 * scale, scale)
+            x += 6 * scale
+
+    def center_text(self, s, y, scale=1):
+        self.text(s, (self.w - text_width(s, scale)) // 2, y, scale)
+
+    def label(self, s, col, row):
+        """Normaler Terminaltext an Zelle (col, row)."""
+        for i, ch in enumerate(s):
+            self.txt[col + i, row] = ch
+
+    def center_label(self, s, row):
+        self.label(s, (self.w - len(s)) // 2, row)
+
+    def save(self, name):
+        cells = {(False, False): " ", (True, False): "▀", (False, True): "▄", (True, True): "█"}
+        lines = []
+        for r in range(self.h // 2):
+            line = "".join(self.txt.get((c, r)) or cells[self.on[2 * r][c], self.on[2 * r + 1][c]]
+                           for c in range(self.w))
+            lines.append(line.rstrip())
+        while lines and not lines[0]:
+            lines.pop(0)
+        while lines and not lines[-1]:
+            lines.pop()
+        (OUT / "screensaver").mkdir(exist_ok=True)
+        (OUT / "screensaver" / name).write_text("\n".join(lines) + "\n")
+
+
+HEART = [".#.#.", "#####", "#####", ".###.", "..#.."]
+PILGRIM = ["..##..", "..##..", ".####.", "#.##.#", "..##..", ".#..#.", ".#..#."]
+
+
+def ss_cross_sunrise():
+    b = Blocks(91, 30)
+    cx, horizon = b.w // 2, 30
+    b.rect(cx - 2, 2, 5, 23)
+    b.rect(cx - 10, 8, 21, 5)
+    # Sonne hinter dem Kreuz, gestreift wie im 8-Bit-Spiel
     for y in range(horizon - 10, horizon):
         if (horizon - y) % 3 == 0 and y < horizon - 3:
             continue
         for x in range(cx - 14, cx + 15):
             if math.hypot(x - cx, (y - horizon) * 1.35) < 14.5 and abs(x - cx) > 3:
-                put(x, y)
-    # Strahlen
+                b.put(x, y)
     for a in range(-80, 81, 20):
         r = math.radians(a - 90)
         for d in range(18, 26, 2):
-            put(round(cx + math.cos(r) * d * 1.25), round(horizon - 1 + math.sin(r) * d * 0.9))
-    # Horizont
-    for x in range(4, W - 4):
+            b.put(round(cx + math.cos(r) * d * 1.25), round(horizon - 1 + math.sin(r) * d * 0.9))
+    for x in range(4, b.w - 4):
         if abs(x - cx) < 26 or x % 2 == 0:
-            put(x, horizon)
-    # Fußspuren Richtung Kreuz
-    for sx, sy, spr in ((cx - 7, 33, FOOT_R), (cx + 2, 33, FOOT_L)):
-        for j, row in enumerate(spr[::2]):
-            for i, ch in enumerate(row):
-                if ch == "#":
-                    put(sx + i, sy + j)
+            b.put(x, horizon)
+    for sx, spr in ((cx - 7, FOOT_R), (cx + 2, FOOT_L)):
+        b.sprite(spr[::2], sx, 33)
+    b.center_text("NÄHER ZU JESUS", 41)
+    b.center_text("JOH 14,6", 51)
+    b.save("1-kreuz-sonnenaufgang.txt")
 
-    def words(s, y):
-        x = (W - text_width(s)) // 2
-        for ch in s:
-            glyph = GLYPH.get(ch, GLYPH["?"])
-            if ch in UMLAUT:
-                put(x + 1, y), put(x + 3, y)
-            for j, row in enumerate(glyph):
-                for i, c in enumerate(row):
-                    if c == "#":
-                        put(x + i, y + 2 + j)
-            x += 6
 
-    words("NÄHER ZU JESUS", 41)
-    words("JOH 14,6", 51)
+def ss_press_start():
+    b = Blocks(96, 30)
+    W = b.w
+    b.label("LVL JOH 14,6", 2, 0)
+    b.label("STEP +1", W - 30, 0)
+    for i in range(3):
+        b.sprite(HEART, W - 21 + i * 7, 0)
+    b.label("WEG · WAHRHEIT · LEBEN", 2, 1)
+    rnd = random.Random(7)
+    for _ in range(26):
+        b.put(rnd.randrange(2, W - 2), rnd.randrange(6, 26))
+    # Hügel mit Kreuz, gestreifte Sonne dahinter
+    hx_, ground = 70, 46
+    top = ground - 9
 
-    cells = {(False, False): " ", (True, False): "▀", (False, True): "▄", (True, True): "█"}
-    lines = ["".join(cells[on[y][x], on[y + 1][x]] for x in range(W)).rstrip()
-             for y in range(0, H, 2)]
-    (OUT / "screensaver.txt").write_text("\n".join(lines) + "\n")
+    def hill(x):
+        return ground - round(9 * math.exp(-((x - hx_) / 13) ** 2))
 
+    for x in range(W):
+        for y in range(hill(x), ground):
+            b.put(x, y)
+    def in_cross(x, y):
+        return (abs(x - hx_) <= 2 and top - 23 <= y <= top) or (abs(x - hx_) <= 8 and top - 17 <= y <= top - 13)
+
+    for y in range(top - 15, top + 2):
+        for x in range(hx_ - 22, hx_ + 23):
+            if math.hypot(x - hx_, (y - top) * 1.3) < 19 and (top - y) % 3 and y < hill(x) - 1 and not in_cross(x, y):
+                b.put(x, y)
+    b.rect(hx_ - 1, top - 22, 3, 22)
+    b.rect(hx_ - 7, top - 16, 15, 3)
+    for x in range(W):
+        if x % 3 or abs(x - hx_) < 30:
+            b.put(x, ground)
+    # Pilger und Fußspuren den Weg hinauf
+    b.sprite(PILGRIM, 14, ground - 7)
+    for i, x in enumerate(range(24, 52, 7)):
+        b.sprite(["##", "##", ".."] if i % 2 else ["..", "##", "##"], x, ground - 3 - i)
+    b.center_label("P R E S S   S T A R T   T O   F O L L O W", 26)
+    b.center_label("1 SPIELER  ·  UNBEGRENZTE LEBEN  ·  GNADE AKTIVIERT", 28)
+    b.save("2-press-start.txt")
+
+
+def ss_terminal():
+    b = Blocks(74, 20)
+    body = [
+        "",
+        " naeher@jesus:~$ sudo pacman -S nachfolge",
+        " Hinweis: Gnade braucht kein sudo.                         Eph 2,8",
+        " :: Pakete (1)  nachfolge-1:1.0-1",
+        " :: Installation fortsetzen? [J/n] j",
+        " (1/1) installiere nachfolge  [####################] 100%",
+        "",
+        " [  OK  ] Started weg.service                              Joh 14,6",
+        " [  OK  ] Started wahrheit.service",
+        " [  OK  ] Started leben.service",
+        " [  OK  ] Mounted /home/gnade",
+        " [  OK  ] Reached target nachfolge.target",
+        "",
+        " naeher@jesus:~$ echo $ZIEL",
+        " Einen Schritt näher.",
+        " naeher@jesus:~$ █",
+        "",
+    ]
+    inner = b.w - 2
+    title = " NÄHER-ZU-JESUS BIOS v3.16 "
+    b.label("╭─" + title + "─" * (inner - len(title) - 1) + "╮", 0, 0)
+    for i, line in enumerate(body):
+        b.label("│" + line.ljust(inner) + "│", 0, i + 1)
+    b.label("╰" + "─" * inner + "╯", 0, len(body) + 1)
+    b.save("3-terminal.txt")
+
+
+def ss_hexdump():
+    verse = "Im Anfang war das Wort, und das Wort war bei Gott, und Gott war das Wort. ".encode()
+    rows = 22
+    b = Blocks(70, rows + 4)
+    b.label("$ xxd johannes_1_1.txt", 0, 0)
+    arm = 5                  # Querbalken des Kreuzes (Zeile im Dump)
+
+    def in_cross(byte, row):
+        return (6 <= byte <= 9 and 1 <= row <= rows - 2) or (arm <= row <= arm + 2 and 2 <= byte <= 13)
+
+    for row in range(rows):
+        line = f"{row * 16:08x}: "
+        asc = ""
+        for i in range(16):
+            v = verse[(row * 16 + i) % len(verse)]
+            h = f"{v:02x}" if in_cross(i, row) else "··"
+            line += h + (" " if i % 2 else "")
+            asc += chr(v) if in_cross(i, row) else "·"
+        b.label(line + " " + asc, 0, row + 2)
+    b.label("Im Anfang war das Wort.  —  Joh 1,1", 0, rows + 3)
+    b.save("4-hexdump-joh-1-1.txt")
+
+
+def ss_der_weg():
+    b = Blocks(90, 26)
+    b.center_text("ICH BIN", 0, 2)
+    b.center_text("DER WEG", 20, 2)
+    for i, x in enumerate(range(8, b.w - 8, 10)):
+        b.sprite((FOOT_R if i % 2 else FOOT_L)[::2], x, 36 + 4 * (i % 2))
+    b.center_label("DIE WAHRHEIT UND DAS LEBEN.", 24)
+    b.center_label("JOH 14,6", 25)
+    b.save("5-ich-bin-der-weg.txt")
+
+
+def screensaver():
+    ss_cross_sunrise()
+    ss_press_start()
+    ss_terminal()
+    ss_hexdump()
+    ss_der_weg()
 
 sunrise()
 boot()

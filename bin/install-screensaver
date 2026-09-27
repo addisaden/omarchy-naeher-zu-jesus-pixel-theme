@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Installiert den Bildschirmschoner nach /usr/local/bin/omarchy-screensaver.
+# Dort wird er vor Omarchys eigenem Skript gefunden; bei Themes ohne
+# screensaver/-Ordner ruft er einfach das Original auf.
+#
+#   bin/install-screensaver              installieren bzw. aktualisieren
+#   bin/install-screensaver --uninstall  entfernen
+
+set -euo pipefail
+
+target=/usr/local/bin/omarchy-screensaver
+
+case ${1:-} in
+--uninstall)
+  sudo rm -f "$target"
+  echo "Entfernt – Omarchy nutzt wieder seinen eigenen Bildschirmschoner."
+  ;;
+"")
+  sudo install -Dm755 "$(dirname "$(readlink -f "$0")")/omarchy-screensaver" "$target"
+  echo "Installiert. Vorschau: omarchy-launch-screensaver force"
+  ;;
+*)
+  echo "Aufruf: $0 [--uninstall]" >&2
+  exit 1
+  ;;
+esac

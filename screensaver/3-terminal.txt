@@ -1,0 +1,19 @@
+╭─ NÄHER-ZU-JESUS BIOS v3.16 ────────────────────────────────────────────╮
+│                                                                        │
+│ naeher@jesus:~$ sudo pacman -S nachfolge                               │
+│ Hinweis: Gnade braucht kein sudo.                         Eph 2,8      │
+│ :: Pakete (1)  nachfolge-1:1.0-1                                       │
+│ :: Installation fortsetzen? [J/n] j                                    │
+│ (1/1) installiere nachfolge  [####################] 100%               │
+│                                                                        │
+│ [  OK  ] Started weg.service                              Joh 14,6     │
+│ [  OK  ] Started wahrheit.service                                      │
+│ [  OK  ] Started leben.service                                         │
+│ [  OK  ] Mounted /home/gnade                                           │
+│ [  OK  ] Reached target nachfolge.target                               │
+│                                                                        │
+│ naeher@jesus:~$ echo $ZIEL                                             │
+│ Einen Schritt näher.                                                   │
+│ naeher@jesus:~$ █                                                      │
+│                                                                        │
+╰────────────────────────────────────────────────────────────────────────╯

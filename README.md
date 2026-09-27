@@ -36,16 +36,32 @@ Alle Hintergründe sind 3840×2400 (16:10) und haben genug Rand, damit auf 16:9-
 
 ## Bildschirmschoner
 
-`screensaver.txt` ist das Motiv im selben Pixel-Stil – Kreuz vor der aufgehenden Sonne, Fußspuren, „NÄHER ZU JESUS“ und „JOH 14,6“ im 5×7-Font. Omarchy lässt es mit zufälligen `ttfx`-Effekten erscheinen.
+Fünf Motive im selben Pixel-Stil liegen in `screensaver/`:
 
-Themes können den Bildschirmschoner nicht selbst setzen, deshalb einmalig kopieren:
+| Datei | Motiv |
+|---|---|
+| `1-kreuz-sonnenaufgang.txt` | Kreuz vor der gestreiften Sonne, Fußspuren, „NÄHER ZU JESUS“ |
+| `2-press-start.txt` | Retro-Game: Pilger, Hügel mit Kreuz, HUD, „PRESS START TO FOLLOW“ |
+| `3-terminal.txt` | `sudo pacman -S nachfolge` und `REACHED TARGET NACHFOLGE.TARGET` |
+| `4-hexdump-joh-1-1.txt` | `xxd` von Joh 1,1, das Kreuz aus den Bytes |
+| `5-ich-bin-der-weg.txt` | „ICH BIN DER WEG“ mit Fußspuren, Joh 14,6 |
+
+Omarchys eigener Bildschirmschoner kennt nur eine Datei und würfelt die Effekt-Farben. `bin/omarchy-screensaver` wechselt dagegen durch alle Motive und färbt die Effekte in Sonnenaufgangs-Farben (`screensaver/palette`). Laser, Strahlen und Synthgrid kommen öfter dran, beim Terminal und beim Hexdump auch mal Matrix-Regen in Phosphor-Grün. Jedes Bild bleibt danach fünf Sekunden stehen.
+
+Installieren (einmalig, braucht `sudo`):
 
 ```bash
-cp ~/.config/omarchy/themes/naeher-zu-jesus-pixel/screensaver.txt ~/.config/omarchy/branding/screensaver.txt
+~/.config/omarchy/themes/naeher-zu-jesus-pixel/bin/install-screensaver
 omarchy-launch-screensaver force   # Vorschau
 ```
 
-Zurück zum Omarchy-Logo: `omarchy branding screensaver reset`
+Das Skript landet in `/usr/local/bin` und wird dort vor Omarchys eigenem gefunden. Mit anderen Themes läuft automatisch wieder der normale Omarchy-Bildschirmschoner. Aus dem Theme liest es nur Textdateien und Hex-Farben. Entfernen mit `install-screensaver --uninstall`.
+
+Ohne Installation geht nur ein einzelnes Motiv mit Omarchys Zufallsfarben:
+
+```bash
+cp ~/.config/omarchy/themes/naeher-zu-jesus-pixel/screensaver/1-kreuz-sonnenaufgang.txt ~/.config/omarchy/branding/screensaver.txt
+```
 
 ## Farben
 
@@ -69,5 +85,5 @@ magick out/sunrise.ppm -filter point -resize 800% backgrounds/1-pixel-sonnenaufg
 magick out/hex.ppm     -filter point -resize 800% backgrounds/3-hexdump-joh-1-1.png
 magick out/boot.ppm    -filter point -resize 400% backgrounds/2-boot.png
 magick out/unlock.ppm -transparent '#FF00FF' -filter point -resize 800% unlock.png
-cp out/screensaver.txt screensaver.txt
+cp out/screensaver/*.txt screensaver/
 ```

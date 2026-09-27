@@ -1,0 +1,148 @@
+#!/bin/bash
+
+# Näher zu Jesus — Pixel: Bildschirmschoner mit Sonnenaufgangs-Farben.
+#
+# Wird nach /usr/local/bin installiert (siehe bin/install-screensaver) und dort
+# vor Omarchys eigenem omarchy-screensaver gefunden. Bringt das aktive Theme
+# einen Ordner screensaver/ mit Motiven (*.txt) mit, zeigt es diese mit
+# ausgesuchten ttfx-Effekten in den Farben aus screensaver/palette. Jedes andere
+# Theme bekommt den normalen Omarchy-Bildschirmschoner.
+#
+# Aus dem Theme werden nur Daten gelesen: Textdateien und Hex-Farben.
+
+THEME_SAVER="$HOME/.local/state/omarchy/current/theme/screensaver"
+STOCK="${OMARCHY_PATH:-/usr/share/omarchy}/bin/omarchy-screensaver"
+HOLD_SECONDS=5
+
+shopt -s nullglob
+motifs=("$THEME_SAVER"/*.txt)
+((${#motifs[@]})) || exec "$STOCK" "$@"
+
+# --- Farben -----------------------------------------------------------------
+declare -A pal=(
+  [light]="FFFFFF FFF1C9 FFD166"
+  [fire]="FFFFFF FFD166 FF7A1A E85D04 A23B2A 5C2A4D"
+  [ember]="FFD166 FF7A1A E85D04"
+  [dusk]="1A2A4A 5C2A4D A23B2A E85D04"
+  [sky]="FFFFFF 90CAF9 BBDEFB"
+  [phosphor]="7CE38B 1F5A2E"
+)
+finals=()
+
+if [[ -f $THEME_SAVER/palette ]]; then
+  while IFS='=' read -r key value; do
+    key=${key//[[:space:]]/}
+    [[ $key =~ ^[a-z_]+$ ]] || continue
+    read -ra colors <<<"$value"
+    ((${#colors[@]})) || continue
+    for c in "${colors[@]}"; do
+      [[ $c =~ ^[0-9A-Fa-f]{6}$ ]] || continue 2
+    done
+    if [[ $key == final* ]]; then
+      finals+=("${colors[*]}")
+    else
+      pal[$key]="${colors[*]}"
+    fi
+  done < <(grep -v '^[[:space:]]*#' "$THEME_SAVER/palette")
+fi
+((${#finals[@]})) || finals=("FFF1C9 FFD166 F4A261 FF7A1A E85D04")
+
+directions=(vertical vertical horizontal diagonal radial)
+
+# --- Effekte ----------------------------------------------------------------
+# Laser, Strahlen und Synthgrid kommen öfter dran.
+EFFECTS=(
+  laseretch laseretch laseretch
+  beams beams
+  synthgrid synthgrid
+  fireworks spotlights sweep burn decrypt rings blackhole waves
+  middleout orbittingvolley highlight unstable errorcorrect smoke
+  vhstape expand slice
+)
+
+# Setzt args für ttfx. Die Farblisten bestehen nur aus geprüften Hex-Werten
+# und werden absichtlich in einzelne Argumente zerlegt.
+effect_args() {
+  local g=${finals[RANDOM % ${#finals[@]}]}
+  local d=${directions[RANDOM % ${#directions[@]}]}
+  local L=${pal[light]} F=${pal[fire]} E=${pal[ember]} D=${pal[dusk]} S=${pal[sky]}
+  local fin=(--final-gradient-stops $g --final-gradient-direction "$d")
+
+  case $1 in
+  laseretch) args=(laseretch --laser-gradient-stops $L --spark-gradient-stops $F --cool-gradient-stops $E "${fin[@]}") ;;
+  beams) args=(beams --beam-gradient-stops $L $E "${fin[@]}") ;;
+  synthgrid) args=(synthgrid --grid-gradient-stops $D --text-gradient-stops $g --text-gradient-direction "$d") ;;
+  fireworks) args=(fireworks --firework-colors $E $L $S "${fin[@]}") ;;
+  burn) args=(burn --starting-color ${D%% *} --burn-colors $F "${fin[@]}") ;;
+  decrypt) args=(decrypt --ciphertext-colors $D "${fin[@]}") ;;
+  rings) args=(rings --ring-colors $E $S "${fin[@]}") ;;
+  blackhole) args=(blackhole --blackhole-color ${L##* } --star-colors $S $E "${fin[@]}") ;;
+  waves) args=(waves --wave-gradient-stops $D ${L##* } "${fin[@]}") ;;
+  middleout) args=(middleout --starting-color ${L%% *} "${fin[@]}") ;;
+  unstable) args=(unstable --unstable-color ${E##* } "${fin[@]}") ;;
+  errorcorrect) args=(errorcorrect --error-color ${E##* } --correct-color ${L##* } "${fin[@]}") ;;
+  smoke) args=(smoke --starting-color ${D%% *} --smoke-gradient-stops $D $E "${fin[@]}") ;;
+  vhstape) args=(vhstape --glitch-line-colors $L $E --glitch-wave-colors $E $D --noise-colors $D $S "${fin[@]}") ;;
+  matrix) args=(matrix --rain-color-gradient ${pal[phosphor]} --highlight-color ${L%% *} --rain-time 6 "${fin[@]}") ;;
+  *) args=("$1" "${fin[@]}") ;;
+  esac
+}
+
+# --- Ablauf wie beim Omarchy-Bildschirmschoner ---------------------------------
+screensaver_in_focus() {
+  hyprctl activewindow -j | jq -e '.class == "org.omarchy.screensaver"' >/dev/null 2>&1
+}
+
+exit_screensaver() {
+  /usr/local/bin/omarchy-native-cursor-restore 2>/dev/null || true
+  pkill -x ttfx 2>/dev/null
+  pkill -f '[o]rg.omarchy.screensaver' 2>/dev/null
+  exit 0
+}
+
+trap exit_screensaver SIGINT SIGTERM SIGHUP SIGQUIT
+
+printf '\033]11;rgb:00/00/00\007'
+hyprctl eval 'hl.config({ cursor = { invisible = true } })' &>/dev/null || hyprctl keyword cursor:invisible true &>/dev/null
+
+tty=$(tty 2>/dev/null)
+
+deadline=$((SECONDS + 2))
+while ((SECONDS < deadline)) && [[ $(stty size 2>/dev/null) == "24 80" ]]; do
+  sleep 0.02
+done
+
+watch_input() {
+  if read -n1 -t 1 || ! screensaver_in_focus; then
+    exit_screensaver
+  fi
+}
+
+motif_index=$((RANDOM % ${#motifs[@]}))
+last_effect=""
+
+while true; do
+  motif=${motifs[motif_index]}
+  motif_index=$(((motif_index + 1) % ${#motifs[@]}))
+
+  pool=("${EFFECTS[@]}")
+  [[ $motif == *terminal* || $motif == *hexdump* ]] && pool+=(matrix matrix)
+  effect=$last_effect
+  while [[ $effect == "$last_effect" ]]; do
+    effect=${pool[RANDOM % ${#pool[@]}]}
+  done
+  last_effect=$effect
+  effect_args "$effect"
+
+  printf '\033[2J\033[H'
+  ttfx -i "$motif" --frame-rate 120 --canvas-width 0 --canvas-height 0 --reuse-canvas \
+    --anchor-canvas c --anchor-text c --no-eol --no-restore-cursor "${args[@]}" &
+
+  while pgrep -t "${tty#/dev/}" -x ttfx >/dev/null; do
+    watch_input
+  done
+
+  for ((i = 0; i < HOLD_SECONDS; i++)); do
+    watch_input
+  done
+done
