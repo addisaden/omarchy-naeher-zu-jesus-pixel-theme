@@ -372,8 +372,72 @@ def unlock():
     cv.save("unlock.ppm")
 
 
+# === 5) Bildschirmschoner (ttfx-Text) ======================================
+def screensaver():
+    """Einfarbiges Pixelbild für den Omarchy-Bildschirmschoner. Zwei Pixel
+    übereinander ergeben eine Terminalzelle (▀ ▄ █), so bleiben sie quadratisch."""
+    W, H = 91, 60
+    on = [[False] * W for _ in range(H)]
+
+    def put(x, y):
+        if 0 <= x < W and 0 <= y < H:
+            on[y][x] = True
+
+    cx, horizon = W // 2, 30
+    # Kreuz
+    for y in range(2, 25):
+        for x in range(cx - 2, cx + 3):
+            put(x, y)
+    for y in range(8, 13):
+        for x in range(cx - 10, cx + 11):
+            put(x, y)
+    # Sonne, die am Horizont hinter dem Kreuz aufgeht (gestreift wie im 8-Bit-Spiel)
+    for y in range(horizon - 10, horizon):
+        if (horizon - y) % 3 == 0 and y < horizon - 3:
+            continue
+        for x in range(cx - 14, cx + 15):
+            if math.hypot(x - cx, (y - horizon) * 1.35) < 14.5 and abs(x - cx) > 3:
+                put(x, y)
+    # Strahlen
+    for a in range(-80, 81, 20):
+        r = math.radians(a - 90)
+        for d in range(18, 26, 2):
+            put(round(cx + math.cos(r) * d * 1.25), round(horizon - 1 + math.sin(r) * d * 0.9))
+    # Horizont
+    for x in range(4, W - 4):
+        if abs(x - cx) < 26 or x % 2 == 0:
+            put(x, horizon)
+    # Fußspuren Richtung Kreuz
+    for sx, sy, spr in ((cx - 7, 33, FOOT_R), (cx + 2, 33, FOOT_L)):
+        for j, row in enumerate(spr[::2]):
+            for i, ch in enumerate(row):
+                if ch == "#":
+                    put(sx + i, sy + j)
+
+    def words(s, y):
+        x = (W - text_width(s)) // 2
+        for ch in s:
+            glyph = GLYPH.get(ch, GLYPH["?"])
+            if ch in UMLAUT:
+                put(x + 1, y), put(x + 3, y)
+            for j, row in enumerate(glyph):
+                for i, c in enumerate(row):
+                    if c == "#":
+                        put(x + i, y + 2 + j)
+            x += 6
+
+    words("NÄHER ZU JESUS", 41)
+    words("JOH 14,6", 51)
+
+    cells = {(False, False): " ", (True, False): "▀", (False, True): "▄", (True, True): "█"}
+    lines = ["".join(cells[on[y][x], on[y + 1][x]] for x in range(W)).rstrip()
+             for y in range(0, H, 2)]
+    (OUT / "screensaver.txt").write_text("\n".join(lines) + "\n")
+
+
 sunrise()
 boot()
 hexdump()
 unlock()
+screensaver()
 print("ok")

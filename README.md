@@ -34,6 +34,19 @@ Mit `omarchy theme bg next` durchschalten:
 
 Alle Hintergründe sind 3840×2400 (16:10) und haben genug Rand, damit auf 16:9-Monitoren nichts Wichtiges abgeschnitten wird.
 
+## Bildschirmschoner
+
+`screensaver.txt` ist das Motiv im selben Pixel-Stil – Kreuz vor der aufgehenden Sonne, Fußspuren, „NÄHER ZU JESUS“ und „JOH 14,6“ im 5×7-Font. Omarchy lässt es mit zufälligen `ttfx`-Effekten erscheinen.
+
+Themes können den Bildschirmschoner nicht selbst setzen, deshalb einmalig kopieren:
+
+```bash
+cp ~/.config/omarchy/themes/naeher-zu-jesus-pixel/screensaver.txt ~/.config/omarchy/branding/screensaver.txt
+omarchy-launch-screensaver force   # Vorschau
+```
+
+Zurück zum Omarchy-Logo: `omarchy branding screensaver reset`
+
 ## Farben
 
 | Rolle | Farbe |
@@ -56,4 +69,5 @@ magick out/sunrise.ppm -filter point -resize 800% backgrounds/1-pixel-sonnenaufg
 magick out/hex.ppm     -filter point -resize 800% backgrounds/3-hexdump-joh-1-1.png
 magick out/boot.ppm    -filter point -resize 400% backgrounds/2-boot.png
 magick out/unlock.ppm -transparent '#FF00FF' -filter point -resize 800% unlock.png
+cp out/screensaver.txt screensaver.txt
 ```
