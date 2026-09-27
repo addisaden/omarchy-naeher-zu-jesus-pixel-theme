@@ -3,6 +3,9 @@
 Ein 8-Bit-Theme für [Omarchy](https://omarchy.org): Sonnenaufgang über dem Nachthimmel, Bernstein-CRT-Terminal, Phosphor-Grün und ein Fensterrahmen im Sonnenaufgangs-Verlauf.
 
 > Kurze Impulse, die dich mindestens einen Schritt näher zu Jesus bringen.
+> Für alle, die nicht nur von ihm hören, sondern ihm folgen wollen.
+
+Das Theme basiert auf dem Design des Podcasts **[Näher zu Jesus](https://jesusfirst.adrianenns.de/podcast)**. Reinhören lohnt sich! 🎧
 
 ![Vorschau](preview.png)
 
@@ -27,7 +30,7 @@ Mit `omarchy theme bg next` durchschalten:
 | `1-pixel-sonnenaufgang.png` | Retro-Game-Szene: Kreuz, Sonne, Fußspuren, HUD „LVL JOH 14,6“ |
 | `2-boot.png` | BIOS/systemd-Bootlog: `REACHED TARGET NACHFOLGE.TARGET`, „Gnade braucht kein sudo“ (Eph 2,8) |
 | `3-hexdump-joh-1-1.png` | `xxd` von Joh 1,1, das Kreuz leuchtet aus den Bytes |
-| `4-titelbild-8bit.png` | Das Titelbild, auf 320×200 gedithert |
+| `4-titelbild-8bit.png` | Das Titelbild des [Podcasts](https://jesusfirst.adrianenns.de/podcast), auf 320×200 gedithert |
 
 Alle Hintergründe sind 3840×2400 (16:10) und haben genug Rand, damit auf 16:9-Monitoren nichts Wichtiges abgeschnitten wird.
 
