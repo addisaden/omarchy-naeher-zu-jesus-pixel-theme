@@ -12,7 +12,7 @@ Das Theme basiert auf dem Design des Podcasts **[Näher zu Jesus](https://jesusf
 ## Installation
 
 ```bash
-omarchy theme install https://github.com/<DEIN-GITHUB-NAME>/omarchy-naeher-zu-jesus-pixel-theme.git
+omarchy theme install https://github.com/addisaden/omarchy-naeher-zu-jesus-pixel-theme.git
 ```
 
 Danach im Menü unter *Style → Theme* auswählen oder:
