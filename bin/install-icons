@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Macht das Pixel-Icon-Theme für GTK/Nautilus sichtbar: verlinkt icons/ nach
+# ~/.local/share/icons/NaeherZuJesus-Pixel (kein sudo nötig). Updates des
+# Themes kommen über den Link automatisch mit.
+#
+#   bin/install-icons              installieren
+#   bin/install-icons --uninstall  entfernen
+
+set -euo pipefail
+
+name=NaeherZuJesus-Pixel
+source_dir="$(dirname "$(dirname "$(readlink -f "$0")")")/icons"
+target="${XDG_DATA_HOME:-$HOME/.local/share}/icons/$name"
+
+case ${1:-} in
+--uninstall)
+  rm -f "$target"
+  gsettings set org.gnome.desktop.interface icon-theme "Adwaita"
+  echo "Entfernt – Icons zurück auf Adwaita."
+  ;;
+"")
+  mkdir -p "$(dirname "$target")"
+  ln -sfn "$source_dir" "$target"
+  gsettings set org.gnome.desktop.interface icon-theme "$name"
+  echo "Installiert. Nautilus ggf. neu öffnen: nautilus -q"
+  ;;
+*)
+  echo "Aufruf: $0 [--uninstall]" >&2
+  exit 1
+  ;;
+esac

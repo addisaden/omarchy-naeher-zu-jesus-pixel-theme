@@ -63,6 +63,21 @@ Ohne Installation geht nur ein einzelnes Motiv mit Omarchys Zufallsfarben:
 cp ~/.config/omarchy/themes/naeher-zu-jesus-pixel/screensaver/1-kreuz-sonnenaufgang.txt ~/.config/omarchy/branding/screensaver.txt
 ```
 
+## Icons
+
+Eigene 8-Bit-Icons für Nautilus und alle GTK-Apps: Bernstein-Ordner mit Pflaumen-Emblemen, Pixel-Papier für Dateien und Terminal, Kiste und Mülleimer. Was fehlt, kommt von Adwaita.
+
+![Icons](preview-icons.png)
+
+Einmalig aktivieren (kein `sudo` nötig):
+
+```bash
+~/.config/omarchy/themes/naeher-zu-jesus-pixel/bin/install-icons
+nautilus -q   # Dateien neu öffnen
+```
+
+Das Skript verlinkt `icons/` nach `~/.local/share/icons/NaeherZuJesus-Pixel`. Danach setzt Omarchy die Icons bei jedem Wechsel auf dieses Theme automatisch. Entfernen mit `install-icons --uninstall`.
+
 ## Farben
 
 | Rolle | Farbe |
@@ -86,4 +101,11 @@ magick out/hex.ppm     -filter point -resize 800% backgrounds/3-hexdump-joh-1-1.
 magick out/boot.ppm    -filter point -resize 400% backgrounds/2-boot.png
 magick out/unlock.ppm -transparent '#FF00FF' -filter point -resize 800% unlock.png
 cp out/screensaver/*.txt screensaver/
+```
+
+`src/icons.py` zeichnet die Icons auf einem 16×16-Raster und schreibt SVGs, die in jeder Größe scharf bleiben:
+
+```bash
+python3 src/icons.py icons/
+magick -background none out/icons-preview.svg -resize 50% preview-icons.png
 ```
