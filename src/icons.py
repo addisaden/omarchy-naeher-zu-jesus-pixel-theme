@@ -495,13 +495,441 @@ ALIASES = {
     },
 }
 
+# ---------------------------------------------------- Symbole (-symbolic)
+# Einfarbig; GTK färbt sie in der Textfarbe der jeweiligen Stelle ein.
+# Raster 16×16, '#' = gesetzt. Einfache Formen werden berechnet.
+
+def canvas():
+    return [[False] * 16 for _ in range(16)]
+
+
+def from_rows(rows):
+    c = canvas()
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row[:16]):
+            c[y][x] = ch == "#"
+    return c
+
+
+def fill(c, x0, y0, x1, y1, on=True):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            if 0 <= x < 16 and 0 <= y < 16:
+                c[y][x] = on
+    return c
+
+
+def frame(c, x0, y0, x1, y1, t=1):
+    fill(c, x0, y0, x1, y0 + t - 1)
+    fill(c, x0, y1 - t + 1, x1, y1)
+    fill(c, x0, y0, x0 + t - 1, y1)
+    fill(c, x1 - t + 1, y0, x1, y1)
+    return c
+
+
+def ring(c, cx, cy, r, t=2, on=True):
+    for y in range(16):
+        for x in range(16):
+            d = ((x - cx) ** 2 + (y - cy) ** 2) ** 0.5
+            if r - t < d <= r:
+                c[y][x] = on
+    return c
+
+
+def disc(c, cx, cy, r, on=True):
+    return ring(c, cx, cy, r, t=r + 1, on=on)
+
+
+def line(c, x0, y0, x1, y1, t=2, on=True):
+    steps = max(abs(x1 - x0), abs(y1 - y0)) or 1
+    for i in range(steps + 1):
+        x = round(x0 + (x1 - x0) * i / steps)
+        y = round(y0 + (y1 - y0) * i / steps)
+        fill(c, x, y, x + t - 1, y + t - 1, on)
+    return c
+
+
+def outline(c):
+    o = canvas()
+    for y in range(16):
+        for x in range(16):
+            if c[y][x] and any(
+                not (0 <= x + dx < 16 and 0 <= y + dy < 16) or not c[y + dy][x + dx]
+                for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
+            ):
+                o[y][x] = True
+    return o
+
+
+def chevron(direction, small=False):
+    c = canvas()
+    n = 3 if small else 5              # halbe Höhe
+    top = 8 - n - 1
+    for i in range(2 * n + 2):
+        d = min(i, 2 * n + 1 - i)
+        x = (9 if not small else 8) - d
+        fill(c, x, top + i, x + 2 - small, top + i)
+    if direction == "right":
+        c = [row[::-1] for row in c]
+    elif direction in ("up", "down"):
+        c = [list(r) for r in zip(*c)]   # links → oben
+        if direction == "down":
+            c = c[::-1]
+    return c
+
+
+def sym_folder():
+    c = canvas()
+    fill(c, 1, 2, 5, 2)
+    fill(c, 1, 3, 14, 3)
+    fill(c, 1, 3, 1, 4)
+    fill(c, 14, 3, 14, 4)
+    fill(c, 1, 5, 14, 13)
+    return c
+
+
+def sym_clock():
+    c = ring(canvas(), 7.5, 7.5, 7.5, 2)
+    fill(c, 7, 3, 8, 8)
+    fill(c, 7, 7, 11, 8)
+    return c
+
+
+STAR = from_rows([
+    "................",
+    ".......##.......",
+    ".......##.......",
+    "......####......",
+    "......####......",
+    ".##############.",
+    "..############..",
+    "...##########...",
+    "....########....",
+    "....########....",
+    "...####..####...",
+    "...###....###...",
+    "..###......###..",
+    "..##........##..",
+    "................",
+    "................",
+])
+
+HOME = from_rows([
+    "................",
+    ".......##.......",
+    "......####......",
+    ".....######.....",
+    "....########....",
+    "...##########...",
+    "..############..",
+    ".##############.",
+    "...##########...",
+    "...##########...",
+    "...####..####...",
+    "...####..####...",
+    "...####..####...",
+    "...####..####...",
+    "................",
+    "................",
+])
+
+PAGE_SYM = from_rows([
+    "................",
+    "...######.......",
+    "...#######......",
+    "...########.....",
+    "...#########....",
+    "...##########...",
+    "...#........#...",
+    "...##########...",
+    "...#........#...",
+    "...##########...",
+    "...#.....####...",
+    "...##########...",
+    "...##########...",
+    "...##########...",
+    "................",
+    "................",
+])
+
+MUSIC = from_rows([
+    "................",
+    "......#########.",
+    "......#########.",
+    "......##.....##.",
+    "......##.....##.",
+    "......##.....##.",
+    "......##.....##.",
+    "......##.....##.",
+    "......##.....##.",
+    "......##.....##.",
+    "....####...####.",
+    "...#####..#####.",
+    "...#####..#####.",
+    "....###....###..",
+    "................",
+    "................",
+])
+
+PEOPLE = from_rows([
+    "................",
+    "................",
+    "...##......##...",
+    "..####....####..",
+    "..####....####..",
+    "...##......##...",
+    "................",
+    ".######..######.",
+    ".######..######.",
+    ".######..######.",
+    ".######..######.",
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+])
+
+
+def sym_download():
+    c = canvas()
+    fill(c, 6, 1, 9, 6)
+    for i, w in enumerate((5, 4, 3, 2, 1)):
+        fill(c, 8 - w, 7 + i, 7 + w, 7 + i)
+    fill(c, 2, 13, 13, 14)
+    return c
+
+
+def sym_pictures():
+    c = frame(canvas(), 1, 2, 14, 13)
+    fill(c, 10, 4, 11, 5)
+    for i, (a, b) in enumerate(((5, 5), (4, 6), (3, 7), (2, 8))):
+        fill(c, a, 8 + i, b, 8 + i)
+    fill(c, 9, 10, 9, 10)
+    fill(c, 8, 11, 12, 11)
+    fill(c, 2, 12, 13, 12)
+    return c
+
+
+def sym_videos():
+    c = frame(canvas(), 1, 2, 14, 13)
+    for i, w in enumerate((1, 2, 3, 4, 3, 2, 1)):
+        fill(c, 6, 4 + i, 5 + w, 4 + i)
+    return c
+
+
+def sym_monitor():
+    c = frame(canvas(), 1, 2, 14, 10, 2)
+    fill(c, 6, 11, 9, 12)
+    fill(c, 4, 13, 11, 13)
+    return c
+
+
+def sym_templates():
+    c = canvas()
+    for x in (3, 4, 7, 8, 11, 12):
+        c[1][x] = c[13][x] = True
+    for y in (2, 5, 6, 9, 10, 12):
+        c[y][3] = c[y][12] = True
+    return c
+
+
+def sym_globe():
+    c = ring(canvas(), 7.5, 7.5, 7.5, 2)
+    fill(c, 1, 7, 14, 8)
+    fill(c, 7, 1, 8, 14)
+    return c
+
+
+def sym_trash(full=False):
+    c = canvas()
+    fill(c, 6, 1, 10, 1)
+    fill(c, 2, 2, 14, 3)
+    fill(c, 3, 5, 13, 13)
+    if not full:
+        for x in (5, 8, 11):
+            fill(c, x, 6, x, 12, on=False)
+    return c
+
+
+def sym_drive():
+    c = fill(canvas(), 1, 4, 14, 11)
+    fill(c, 3, 6, 12, 6, on=False)
+    fill(c, 11, 9, 11, 9, on=False)
+    fill(c, 13, 9, 13, 9, on=False)
+    return c
+
+
+def sym_find():
+    c = ring(canvas(), 6, 6, 5.5, 2)
+    line(c, 10, 10, 13, 13)
+    return c
+
+
+def sym_menu():
+    c = canvas()
+    for y in (3, 7, 11):
+        fill(c, 2, y, 13, y + 1)
+    return c
+
+
+def sym_more():
+    c = canvas()
+    for y in (2, 7, 12):
+        fill(c, 7, y, 8, y + 1)
+    return c
+
+
+def sym_grid():
+    c = canvas()
+    for x, y in ((2, 2), (9, 2), (2, 9), (9, 9)):
+        fill(c, x, y, x + 4, y + 4)
+    return c
+
+
+def sym_list():
+    c = canvas()
+    for y in (3, 7, 11):
+        fill(c, 2, y, 3, y + 1)
+        fill(c, 5, y, 13, y + 1)
+    return c
+
+
+def sym_sidebar():
+    c = frame(canvas(), 1, 2, 14, 13)
+    fill(c, 1, 2, 5, 13)
+    return c
+
+
+def sym_close():
+    c = line(canvas(), 3, 3, 11, 11)
+    return line(c, 11, 3, 3, 11)
+
+
+def sym_add():
+    c = fill(canvas(), 7, 2, 8, 13)
+    return fill(c, 2, 7, 13, 8)
+
+
+def sym_check():
+    c = line(canvas(), 2, 8, 5, 11)
+    return line(c, 5, 11, 12, 4)
+
+
+def sym_clear():
+    c = disc(canvas(), 7.5, 7.5, 7.5)
+    line(c, 5, 5, 9, 9, on=False)
+    return line(c, 9, 5, 5, 9, on=False)
+
+
+def sym_bookmark():
+    c = fill(canvas(), 3, 1, 12, 14)
+    for i in range(4):
+        fill(c, 4 + i, 14 - i, 11 - i, 14 - i, on=False)
+    return c
+
+
+def sym_maximize():
+    return frame(canvas(), 3, 3, 12, 12, 2)
+
+
+def sym_minimize():
+    return fill(canvas(), 3, 11, 12, 12)
+
+
+def sym_restore():
+    c = frame(canvas(), 2, 5, 10, 13, 2)
+    fill(c, 5, 2, 13, 3)
+    return fill(c, 12, 2, 13, 10)
+
+
+SYMBOLIC = {
+    "folder": sym_folder(),
+    "user-home": HOME,
+    "folder-documents": PAGE_SYM,
+    "folder-download": sym_download(),
+    "folder-music": MUSIC,
+    "folder-pictures": sym_pictures(),
+    "folder-videos": sym_videos(),
+    "user-desktop": sym_monitor(),
+    "folder-templates": sym_templates(),
+    "folder-publicshare": PEOPLE,
+    "folder-remote": sym_globe(),
+    "user-trash": sym_trash(),
+    "user-trash-full": sym_trash(full=True),
+    "document-open-recent": sym_clock(),
+    "starred": STAR,
+    "non-starred": outline(STAR),
+    "drive-harddisk": sym_drive(),
+    "network-computer": sym_monitor(),
+    "go-previous": chevron("left"),
+    "go-next": chevron("right"),
+    "go-up": chevron("up"),
+    "go-down": chevron("down"),
+    "pan-start": chevron("left", small=True),
+    "pan-end": chevron("right", small=True),
+    "pan-up": chevron("up", small=True),
+    "pan-down": chevron("down", small=True),
+    "edit-find": sym_find(),
+    "open-menu": sym_menu(),
+    "view-more": sym_more(),
+    "view-grid": sym_grid(),
+    "view-list": sym_list(),
+    "sidebar-show": sym_sidebar(),
+    "window-close": sym_close(),
+    "window-maximize": sym_maximize(),
+    "window-minimize": sym_minimize(),
+    "window-restore": sym_restore(),
+    "list-add": sym_add(),
+    "object-select": sym_check(),
+    "edit-clear": sym_clear(),
+    "bookmark-new": sym_bookmark(),
+}
+
+SYMBOLIC_ALIASES = {
+    "go-previous": ["go-previous-ltr"],
+    "go-next": ["go-next-ltr"],
+    "edit-find": ["system-search"],
+    "folder-remote": ["network-workgroup", "network-server"],
+    "network-computer": ["computer"],
+    "view-more": ["view-more-vertical"],
+    "edit-clear": ["edit-clear-rtl"],
+    "folder": ["inode-directory"],
+}
+
+
+def svg_sym(c):
+    rects = []
+    for y, row in enumerate(c):
+        x = 0
+        while x < 16:
+            if not row[x]:
+                x += 1
+                continue
+            start = x
+            while x < 16 and row[x]:
+                x += 1
+            rects.append(f'<rect x="{start}" y="{y}" width="{x - start}" height="1"/>')
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" '
+        'shape-rendering="crispEdges" fill="#2e3436">' + "".join(rects) + "</svg>\n"
+    )
+
+
 INDEX = f"""[Icon Theme]
 Name=Näher zu Jesus Pixel
 Comment=8-Bit-Ordner und -Dateien im Sonnenaufgangs-Stil
 Example=folder
 Inherits=Adwaita,hicolor
 
-Directories=scalable/places,scalable/mimetypes
+Directories=scalable/places,scalable/mimetypes,symbolic
+
+[symbolic]
+Context=Actions
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
 
 [scalable/places]
 Context=Places
@@ -530,7 +958,28 @@ def main():
         for target, names in ALIASES.get(ctx, {}).items():
             for n in names:
                 os.symlink(f"{target}.svg", d / f"{n}.svg")
+    d = OUT / "symbolic"
+    d.mkdir(parents=True)
+    for name, c in SYMBOLIC.items():
+        (d / f"{name}-symbolic.svg").write_text(svg_sym(c))
+    for target, names in SYMBOLIC_ALIASES.items():
+        for n in names:
+            os.symlink(f"{target}-symbolic.svg", d / f"{n}-symbolic.svg")
     (OUT / "index.theme").write_text(INDEX)
+
+    # Übersicht der Symbole (hell auf Nachthimmel)
+    cols, cell = 10, 20
+    rows = (len(SYMBOLIC) + cols - 1) // cols
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {cols * cell} {rows * cell}" '
+             f'width="{cols * cell * 6}" height="{rows * cell * 6}" shape-rendering="crispEdges">',
+             '<rect width="100%" height="100%" fill="#0A1020"/>']
+    for i, c in enumerate(SYMBOLIC.values()):
+        x, y = (i % cols) * cell + 2, (i // cols) * cell + 2
+        inner = svg_sym(c).split(">", 1)[1].rsplit("</svg>", 1)[0]
+        parts.append(f'<g transform="translate({x},{y})" fill="#F7DFA8">{inner}</g>')
+    parts.append("</svg>\n")
+    (OUT.parent / "out").mkdir(exist_ok=True)
+    (OUT.parent / "out" / "symbolic-preview.svg").write_text("".join(parts))
 
     # Übersicht (preview-icons.svg) zum Anschauen
     names = [(c, n) for c, icons in ICONS.items() for n in icons]

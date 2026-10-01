@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Omarchy theme-set-Hook: übernimmt gtk.css des aktuellen Themes für alle
+# GTK4/libadwaita-Apps. Themes ohne gtk.css bekommen eine leere Datei, eine
+# eigene ~/.config/gtk-4.0/gtk.css bleibt erhalten (nur eine @import-Zeile).
+
+theme="$HOME/.local/state/omarchy/current/theme"
+dir="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0"
+import='@import url("omarchy-theme.css");'
+
+mkdir -p "$dir"
+
+if [[ -f $theme/gtk.css ]]; then
+  cp "$theme/gtk.css" "$dir/omarchy-theme.css"
+else
+  : >"$dir/omarchy-theme.css"
+fi
+
+if ! grep -qxF "$import" "$dir/gtk.css" 2>/dev/null; then
+  { echo "$import"; cat "$dir/gtk.css" 2>/dev/null; } >"$dir/gtk.css.new"
+  mv "$dir/gtk.css.new" "$dir/gtk.css"
+fi

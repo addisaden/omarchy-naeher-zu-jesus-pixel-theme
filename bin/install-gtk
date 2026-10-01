@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# Pixel-Look für Dateien (Nautilus) und alle GTK4/libadwaita-Apps:
+#  - verlinkt icons/ nach ~/.local/share/icons/NaeherZuJesus-Pixel
+#  - installiert einen Omarchy theme-set-Hook, der gtk.css des aktiven
+#    Themes nach ~/.config/gtk-4.0/omarchy-theme.css übernimmt
+# Kein sudo nötig.
+#
+#   bin/install-gtk              installieren
+#   bin/install-gtk --uninstall  entfernen
+
+set -euo pipefail
+
+name=NaeherZuJesus-Pixel
+theme_dir="$(dirname "$(dirname "$(readlink -f "$0")")")"
+icons_target="${XDG_DATA_HOME:-$HOME/.local/share}/icons/$name"
+hook_target="$HOME/.config/omarchy/hooks/theme-set.d/gtk-theme-hook"
+gtk_dir="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0"
+
+case ${1:-} in
+--uninstall)
+  rm -f "$icons_target" "$hook_target"
+  : >"$gtk_dir/omarchy-theme.css" 2>/dev/null || true
+  gsettings set org.gnome.desktop.interface icon-theme "Adwaita"
+  echo "Entfernt – Icons zurück auf Adwaita, GTK-Farben aus."
+  ;;
+"")
+  mkdir -p "$(dirname "$icons_target")"
+  ln -sfn "$theme_dir/icons" "$icons_target"
+  omarchy hook install theme-set "$theme_dir/bin/gtk-theme-hook" >/dev/null
+  "$theme_dir/bin/gtk-theme-hook"
+  [[ $(<"$HOME/.local/state/omarchy/current/theme/icons.theme") == "$name" ]] &&
+    gsettings set org.gnome.desktop.interface icon-theme "$name"
+  echo "Installiert. Dateien neu öffnen: nautilus -q"
+  ;;
+*)
+  echo "Aufruf: $0 [--uninstall]" >&2
+  exit 1
+  ;;
+esac

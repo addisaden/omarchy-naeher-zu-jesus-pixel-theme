@@ -1,0 +1,125 @@
+/* Näher zu Jesus — Pixel: GTK4/libadwaita (Dateien, Einstellungen, Dialoge …)
+ *
+ * Wird vom theme-set-Hook (bin/install-gtk) nach
+ * ~/.config/gtk-4.0/omarchy-theme.css kopiert. Apps neu starten, damit es greift.
+ */
+
+:root {
+  /* Akzent: Bernstein */
+  --accent-color: #FFD166;
+  --accent-bg-color: #E8A33C;
+  --accent-fg-color: #04070F;
+
+  --destructive-color: #FF5A4E;
+  --destructive-bg-color: #D93A2E;
+  --destructive-fg-color: #FFF1C9;
+  --success-color: #7CE38B;
+  --success-bg-color: #2E7D4F;
+  --success-fg-color: #FFF1C9;
+  --warning-color: #FF7A1A;
+  --warning-bg-color: #E85D04;
+  --warning-fg-color: #04070F;
+  --error-color: #FF5A4E;
+  --error-bg-color: #D93A2E;
+  --error-fg-color: #FFF1C9;
+
+  /* Flächen: Nachthimmel, Text: Bernstein-CRT */
+  --window-bg-color: #0A1020;
+  --window-fg-color: #F7DFA8;
+  --view-bg-color: #070B17;
+  --view-fg-color: #F7DFA8;
+
+  --headerbar-bg-color: #04070F;
+  --headerbar-fg-color: #FFD166;
+  --headerbar-border-color: #E85D04;
+  --headerbar-backdrop-color: #070B17;
+  --headerbar-shade-color: rgba(0, 0, 0, 0.5);
+  --headerbar-darker-shade-color: rgba(0, 0, 0, 0.7);
+
+  --sidebar-bg-color: #0A1020;
+  --sidebar-fg-color: #F7DFA8;
+  --sidebar-backdrop-color: #0A1020;
+  --sidebar-border-color: #1A2A4A;
+  --sidebar-shade-color: rgba(0, 0, 0, 0.4);
+  --secondary-sidebar-bg-color: #070B17;
+  --secondary-sidebar-fg-color: #F7DFA8;
+  --secondary-sidebar-backdrop-color: #070B17;
+  --secondary-sidebar-border-color: #1A2A4A;
+  --secondary-sidebar-shade-color: rgba(0, 0, 0, 0.4);
+
+  --card-bg-color: #1A2A4A;
+  --card-fg-color: #F7DFA8;
+  --card-shade-color: rgba(0, 0, 0, 0.4);
+  --dialog-bg-color: #0A1020;
+  --dialog-fg-color: #F7DFA8;
+  --popover-bg-color: #04070F;
+  --popover-fg-color: #F7DFA8;
+  --popover-shade-color: rgba(0, 0, 0, 0.5);
+  --thumbnail-bg-color: #1A2A4A;
+  --thumbnail-fg-color: #F7DFA8;
+  --overview-bg-color: #04070F;
+  --overview-fg-color: #F7DFA8;
+}
+
+/* 8-Bit: keine Rundungen */
+* {
+  border-radius: 0;
+  -gtk-icon-shadow: none;
+}
+
+window,
+window.csd,
+window.csd > .titlebar,
+.window-frame {
+  border-radius: 0;
+}
+
+/* Kopfleiste mit Sonnenaufgangs-Linie */
+headerbar {
+  box-shadow: inset 0 -2px #E85D04;
+}
+
+/* Auswahl in Pflaume mit Bernstein-Rand */
+gridview > child:selected,
+listview > row:selected,
+columnview > listview > row:selected,
+.navigation-sidebar > row:selected {
+  background-color: #5C2A4D;
+  color: #FFF1C9;
+  box-shadow: inset 0 0 0 2px #FFD166;
+}
+
+/* Hover dezent im Himmelblau */
+gridview > child:hover:not(:selected),
+listview > row:hover:not(:selected),
+.navigation-sidebar > row:hover:not(:selected) {
+  background-color: #1A2A4A;
+}
+
+/* Fokus-Rahmen und Eingabefelder */
+entry:focus-within,
+searchbar entry:focus-within {
+  box-shadow: inset 0 0 0 2px #FFD166;
+}
+
+/* Pfadleiste */
+.path-bar button:checked,
+.path-bar button.current-dir {
+  color: #FFD166;
+}
+
+/* Fortschrittsbalken im Sonnenaufgang */
+progressbar > trough > progress,
+levelbar block.filled {
+  background-image: linear-gradient(to right, #FFD166, #E85D04, #5C2A4D);
+}
+
+/* Scrollbalken eckig und bernsteinfarben */
+scrollbar slider {
+  background-color: rgba(255, 209, 102, 0.5);
+  min-width: 6px;
+  min-height: 6px;
+}
+scrollbar slider:hover {
+  background-color: #FFD166;
+}

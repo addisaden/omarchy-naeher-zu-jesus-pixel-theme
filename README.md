@@ -63,20 +63,25 @@ Ohne Installation geht nur ein einzelnes Motiv mit Omarchys Zufallsfarben:
 cp ~/.config/omarchy/themes/naeher-zu-jesus-pixel/screensaver/1-kreuz-sonnenaufgang.txt ~/.config/omarchy/branding/screensaver.txt
 ```
 
-## Icons
+## Dateien & GTK-Apps
 
-Eigene 8-Bit-Icons für Nautilus und alle GTK-Apps: Bernstein-Ordner mit Pflaumen-Emblemen, Pixel-Papier für Dateien und Terminal, Kiste und Mülleimer. Was fehlt, kommt von Adwaita.
+Pixel-Look für Nautilus und alle GTK4/libadwaita-Apps (Einstellungen, Dialoge, Datei-Auswahl …):
+
+- **Icons**: Bernstein-Ordner mit Pflaumen-Emblemen, Pixel-Papier für Dateitypen, Terminal, Kiste, Mülleimer
+- **Symbole** in Seitenleiste und Kopfleiste als 8-Bit-Glyphen (Zurück/Vor, Suche, Menü, Ansicht, Stern, Uhr …)
+- **Farben**: Nachthimmel-Flächen, Bernstein-Text, Auswahl in Pflaume mit Bernstein-Rand, Sonnenaufgangs-Linie unter der Kopfleiste
+- **Eckige Kanten** überall
 
 ![Icons](preview-icons.png)
 
 Einmalig aktivieren (kein `sudo` nötig):
 
 ```bash
-~/.config/omarchy/themes/naeher-zu-jesus-pixel/bin/install-icons
+~/.config/omarchy/themes/naeher-zu-jesus-pixel/bin/install-gtk
 nautilus -q   # Dateien neu öffnen
 ```
 
-Das Skript verlinkt `icons/` nach `~/.local/share/icons/NaeherZuJesus-Pixel`. Danach setzt Omarchy die Icons bei jedem Wechsel auf dieses Theme automatisch. Entfernen mit `install-icons --uninstall`.
+Das Skript verlinkt `icons/` nach `~/.local/share/icons/NaeherZuJesus-Pixel` und installiert einen Omarchy-Hook (`theme-set.d/gtk-theme-hook`). Der kopiert bei jedem Theme-Wechsel die `gtk.css` des aktiven Themes nach `~/.config/gtk-4.0/omarchy-theme.css`. Bei Themes ohne `gtk.css` bleibt die Datei leer, eine eigene `gtk.css` bleibt erhalten. Apps übernehmen Änderungen nach einem Neustart. Entfernen mit `install-gtk --uninstall`.
 
 ## Farben
 
@@ -103,7 +108,7 @@ magick out/unlock.ppm -transparent '#FF00FF' -filter point -resize 800% unlock.p
 cp out/screensaver/*.txt screensaver/
 ```
 
-`src/icons.py` zeichnet die Icons auf einem 16×16-Raster und schreibt SVGs, die in jeder Größe scharf bleiben:
+`src/icons.py` zeichnet Icons und Symbole auf einem 16×16-Raster und schreibt SVGs, die in jeder Größe scharf bleiben:
 
 ```bash
 python3 src/icons.py icons/

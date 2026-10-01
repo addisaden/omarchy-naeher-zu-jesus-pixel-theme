@@ -4,7 +4,14 @@ Comment=8-Bit-Ordner und -Dateien im Sonnenaufgangs-Stil
 Example=folder
 Inherits=Adwaita,hicolor
 
-Directories=scalable/places,scalable/mimetypes
+Directories=scalable/places,scalable/mimetypes,symbolic
+
+[symbolic]
+Context=Actions
+Size=16
+MinSize=8
+MaxSize=512
+Type=Scalable
 
 [scalable/places]
 Context=Places
